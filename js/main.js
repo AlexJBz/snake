@@ -55,7 +55,7 @@ let game = {
     snakeClass: class Snake extends PIXI.Graphics {
         constructor() {
             super();
-            this.parts = [ { x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 } ];
+            this.parts = [ {x: 0, y: 0 } ];
             this.moveX = 0;
             this.moveY = 0;
             this.draw();
@@ -70,24 +70,44 @@ let game = {
             });
         }
         
+        addPart () {
+            let tail = this.parts[this.parts.length - 1];
+            this.parts.push({ x: tail.x, y: tail.y })
+        }
+
         move () {
             let head = this.parts[0];
             let tail = this.parts.pop();
-            tail.x = head.x + this.moveX;
-            tail.y = head.y + this.moveY;
+            if (this.moveX != 0 || this.moveY != 0) {
+                tail.x = head.x + this.moveX;
+                tail.y = head.y + this.moveY;
+            }
             this.parts.unshift(tail);
             if (this.checkCollisions()) {
                 this.clear();
                 this.draw();
             } else {
                 console.log('Game over!');
+                clearInterval(game.loop);
             }
         }
 
         checkCollisions () {
             let head = this.parts[0];
-            if (head.x > game.settings.width || head.y > game.settings.length || head.x < 0 || head.y < 0) {
-                clearInterval(game.loop);
+            let tail = this.parts[this.parts.length - 1];
+            if (head.x >= game.settings.width || head.y >= game.settings.length || head.x < 0 || head.y < 0) {
+                return false;
+            }
+            let hitSelf = false;
+            this.parts.forEach(part => {
+                if (head != part && part.x != tail.x && part.y != tail.y) {
+                    if (head.x == part.x && head.y == part.y) {
+                        console.log('snake hit itself')
+                        hitSelf = true;
+                    }
+                }
+            });
+            if (hitSelf == true) {
                 return false;
             }
             return true;
@@ -96,20 +116,28 @@ let game = {
         changeDirection(keyCode) {
             switch(keyCode) {
                 case 37:
-                    this.moveX = -1;
-                    this.moveY = 0;
+                    if (this.moveX == 0) {
+                        this.moveX = -1;
+                        this.moveY = 0;
+                    }
                     break;
                 case 38:
-                    this.moveX = 0;
-                    this.moveY = -1;
+                    if (this.moveY == 0) {
+                        this.moveX = 0;
+                        this.moveY = -1;
+                    }
                     break;
                 case 39:
-                    this.moveX = 1;
-                    this.moveY = 0;
+                    if (this.moveX == 0) {
+                        this.moveX = 1;
+                        this.moveY = 0;
+                    }
                     break;
                 case 40:
-                    this.moveX = 0;
-                    this.moveY = 1;
+                    if (this.moveY == 0) {
+                        this.moveX = 0;
+                        this.moveY = 1;
+                    }
                     break;
                 default:
                     // Oi stop playing with the console
