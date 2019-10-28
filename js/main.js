@@ -9,16 +9,13 @@ let game = {
     colours: {
         white: 0xFFFFFF,
         black: 0x000000,
-        red: 0xCC0E00
+        red: 0xCC0E00,
+        green: 0x4FD936
     },
     settings: {
-        width: 50,
-        length: 40,
-<<<<<<< HEAD
-        tileSize: 15
-=======
-        tileSize: 15,
->>>>>>> 2fbc6e3add3c494b6010b69dfd2225d6ad5e4ebd
+        width: 25,
+        length: 25,
+        tileSize: 20,
     },
     mapClass: class Map extends PIXI.Graphics {
         constructor(width, length) {
@@ -59,30 +56,6 @@ let game = {
     snakeClass: class Snake extends PIXI.Graphics {
         constructor() {
             super();
-<<<<<<< HEAD
-            this.length = 0;
-            this.addLength();
-        }
-
-        addLength () {
-            this.length++;
-            this.addChild(new game.partClass());
-        }
-
-        move (key) {
-            switch (key) {
-                case 37:
-                    console.log('left');
-                    break;
-                case 38:
-                    console.log('up');
-                    break;
-                case 39:
-                    console.log('right');
-                    break;
-                case 40:
-                    console.log('down');
-=======
             this.parts = [ {x: 0, y: 0 } ];
             this.moveX = 0;
             this.moveY = 0;
@@ -90,6 +63,7 @@ let game = {
         }
 
         draw () {
+            this.clear();
             this.parts.forEach(part => {
                 this.lineStyle(1, game.colours.red)
                     .beginFill(game.colours.red)
@@ -112,7 +86,6 @@ let game = {
             }
             this.parts.unshift(tail);
             if (this.checkCollisions()) {
-                this.clear();
                 this.draw();
             } else {
                 console.log('Game over!');
@@ -123,18 +96,24 @@ let game = {
         checkCollisions () {
             let head = this.parts[0];
             let tail = this.parts[this.parts.length - 1];
+            if (head.x == tail.x && head.y == tail.y && this.parts.length > 1) {
+                return false;
+            }
             if (head.x >= game.settings.width || head.y >= game.settings.length || head.x < 0 || head.y < 0) {
                 return false;
             }
             let hitSelf = false;
             this.parts.forEach(part => {
-                if (head != part && part.x != tail.x && part.y != tail.y) {
-                    if (head.x == part.x && head.y == part.y) {
-                        console.log('snake hit itself')
-                        hitSelf = true;
+                if (head != part) {
+                    if (!(part.x == tail.x && part.y == tail.y)) {
+                        return false;
                     }
                 }
             });
+            if (head.x == game.food.pos.x && head.y == game.food.pos.y) {
+                this.addPart();
+                game.food.placeFood();
+            }
             if (hitSelf == true) {
                 return false;
             }
@@ -142,72 +121,82 @@ let game = {
         }
 
         changeDirection(keyCode) {
-            switch(keyCode) {
-                case 37:
-                    if (this.moveX == 0) {
-                        this.moveX = -1;
-                        this.moveY = 0;
-                    }
-                    break;
-                case 38:
-                    if (this.moveY == 0) {
-                        this.moveX = 0;
-                        this.moveY = -1;
-                    }
-                    break;
-                case 39:
-                    if (this.moveX == 0) {
-                        this.moveX = 1;
-                        this.moveY = 0;
-                    }
-                    break;
-                case 40:
-                    if (this.moveY == 0) {
-                        this.moveX = 0;
-                        this.moveY = 1;
-                    }
-                    break;
-                default:
-                    // Oi stop playing with the console
-                    console.log('Cheeky!')
->>>>>>> 2fbc6e3add3c494b6010b69dfd2225d6ad5e4ebd
-                    break;
+            if (!this.dirLock) {
+                switch(keyCode) {
+                    case 37:
+                        if (this.moveX == 0) {
+                            this.moveX = -1;
+                            this.moveY = 0;
+                        }
+                        break;
+                    case 38:
+                        if (this.moveY == 0) {
+                            this.moveX = 0;
+                            this.moveY = -1;
+                        }
+                        break;
+                    case 39:
+                        if (this.moveX == 0) {
+                            this.moveX = 1;
+                            this.moveY = 0;
+                        }
+                        break;
+                    case 40:
+                        if (this.moveY == 0) {
+                            this.moveX = 0;
+                            this.moveY = 1;
+                        }
+                        break;
+                    default:
+                        // Oi stop playing with the console
+                        console.log('Cheeky!')
+                        break;
+                }
+                this.dirLock = true;
             }
         }
+
+        isSnakeOnCoord(x, y) {
+            let onCoord = false;
+            this.parts.forEach(part => {
+                if (part.x == x && part.y == y) {
+                    onCoord = true;
+                }
+            });
+            return onCoord;
+        }
     },
-<<<<<<< HEAD
-    partClass: class Part extends PIXI.Graphics {
+    foodClass: class Food extends PIXI.Graphics {
         constructor() {
             super();
-            this.draw();
+            this.pos = { x: null, y: null };
+            this.placeFood();
         }
 
         draw () {
-            this.moveTo(-1, 0)
-                .beginFill(0xFF0000)
-                .lineStyle(1, 0xFf0000)
-                .lineTo(game.settings.tileSize - 1, 0)
-                .lineTo(game.settings.tileSize - 1, game.settings.tileSize)
-                .lineTo(-1, game.settings.tileSize)
-                .lineTo(-1, 0)
+            this.clear();
+            this.lineStyle(1, game.colours.green)
+                .beginFill(game.colours.green)
+                .drawRect(this.pos.x * game.settings.tileSize + 1, this.pos.y * game.settings.tileSize + 1, game.settings.tileSize - 2, game.settings.tileSize - 2)
                 .endFill();
         }
 
-        move (x, y) {
-            let pixelX = x * game.settings.tileSize;
-            let pixelY = y * game.settings.tileSize;
-            this.position.x += pixelX;
-            this.position.y += pixelY;
+        placeFood () {
+            let randomX = Math.floor(Math.random() * game.settings.width);
+            let randomY = Math.floor(Math.random() * game.settings.length);
+            if (game.snake.isSnakeOnCoord(randomX, randomY)) {
+                this.placeFood();
+            } else {
+                this.pos.x = randomX;
+                this.pos.y = randomY;
+                this.draw();
+            }
         }
-
     },
     map: null,
     snake: null,
-=======
-    map: null,
-    snake: null,
     loop: null,
->>>>>>> 2fbc6e3add3c494b6010b69dfd2225d6ad5e4ebd
+    food: null,
     positioning () {
         window.addEventListener('resize', ()=> {
             this.position();
@@ -224,17 +213,10 @@ let game = {
         this.map = new this.mapClass(this.settings.width, this.settings.length);
         this.snake = new this.snakeClass();
         this.pixi.stage.addChild(this.map);
-<<<<<<< HEAD
-        this.pixi.stage.addChild(this.snake);
-        window.addEventListener('keyup', (e)=> {
-            let key = e.keyCode;
-            if (key >= 37 && key <= 40) {
-                this.snake.move(key);
-            }
-        });
-=======
         this.snake = new this.snakeClass();
         this.map.addChild(this.snake);
+        this.food = new this.foodClass();
+        this.map.addChild(this.food);
 
         window.addEventListener('keyup', (e)=> {
             if (e.keyCode >= 37 && e.keyCode <= 40) {
@@ -244,8 +226,8 @@ let game = {
 
         game.loop = setInterval(()=> {
             game.snake.move();
+            game.snake.dirLock = false;
         }, 150);
->>>>>>> 2fbc6e3add3c494b6010b69dfd2225d6ad5e4ebd
     }
 }
 
