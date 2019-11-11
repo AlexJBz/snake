@@ -13,9 +13,9 @@ let game = {
         green: 0x4FD936
     },
     settings: {
-        width: 25,
-        length: 25,
-        tileSize: 20,
+        width: 20,
+        length: 20,
+        tileSize: 25,
     },
     mapClass: class Map extends PIXI.Graphics {
         constructor(width, length) {
@@ -102,22 +102,32 @@ let game = {
             if (head.x >= game.settings.width || head.y >= game.settings.length || head.x < 0 || head.y < 0) {
                 return false;
             }
+            // Literally impossible to hit yourself if you are smaller than 4
             let hitSelf = false;
-            this.parts.forEach(part => {
-                if (head != part) {
-                    if (!(part.x == tail.x && part.y == tail.y)) {
-                        return false;
+            if (this.parts.length > 4) {
+                this.parts.forEach(part => {
+                    if (part != tail && part != head) {
+                        if (part.x == head.x && part.y == head.y) {
+                            hitSelf = true;
+                        }
                     }
-                }
-            });
-            if (head.x == game.food.pos.x && head.y == game.food.pos.y) {
+                });
+            }
+            if (hitSelf) {
+                return false;
+            }
+            // Found food!
+            if (this.checkFood(head, game.food)) {
                 this.addPart();
                 game.food.placeFood();
             }
-            if (hitSelf == true) {
-                return false;
-            }
             return true;
+        }
+
+        checkFood(head, food) {
+            if (head.x == food.pos.x && head.y == food.pos.y) {
+                return true;
+            }
         }
 
         changeDirection(keyCode) {
@@ -227,7 +237,7 @@ let game = {
         game.loop = setInterval(()=> {
             game.snake.move();
             game.snake.dirLock = false;
-        }, 150);
+        }, 100);
     }
 }
 
